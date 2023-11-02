@@ -1,0 +1,16 @@
+# Project exclude paths
+/venv/
+*.png
+*.txt
+*.bat
+*.jpg
+lib64
+*.csv
+*.rar
+output/
+*.cfg
+fp-info-cache
+generate_vias_FICS.py
+generate_vias_GT.py
+generate_traces.py
+.idea/
