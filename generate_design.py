@@ -28,6 +28,16 @@ def getAbsoluteAngle(edge1, edge2):
     v2 = tuple(map(operator.sub, edge2[0], edge2[1]))
     return abs(np.degrees(math.atan2(np.linalg.det([v1, v2]), np.dot(v1, v2))))
 
+def angle_to(p1, p2, rotation=0, clockwise=False):
+    angle = math.degrees(math.atan2(p2[1] - p1[1], p2[0] - p1[0])) - rotation
+    if not clockwise:
+        angle = -angle
+    return angle % 360
+
+def anti_clockwise(p1,p2):
+    alpha = math.degrees(math.atan2(p2[1] - p1[1],p2[0]-p1[0]))
+    return (alpha + 360) % 360
+
 
 def getInputs():
     fileName = input("What do you want the file name to be (without extension)? ")
@@ -42,7 +52,8 @@ def pointsMinMax(pointsList):
     minY = 150000
     for i in pointsList:
         if i[0] > maxX:
-            maxX = i[0]
+            maxX
+                
         if i[0] < minX:
             minX = i[0]
         if i[1] > maxY:
@@ -418,6 +429,25 @@ def main():
                 newLineWidth.append((i, minDist))
             linesList.append(newLineWidth)
 
+        updatedLinesList = list()
+        for i in linesList:
+            latestEnd = i[0][0][0]
+            line = list()
+            for j in i:
+                angle = anti_clockwise(latestEnd, j[0][1])
+                # Modulus with 45, if >= 22.5, round up, else round down
+                mod = angle % 45
+                if mod >= 22.5:
+                    rounded_angle = (angle//45+1)*45
+                else:
+                    rounded_angle = (angle//45)*45
+                length = distanceBetween(latestEnd, j[0][1])
+                final = ((latestEnd[0] + (length*math.cos(math.radians(rounded_angle)))), (latestEnd[1] + (length*math.sin(math.radians(rounded_angle)))))
+                line.append(((latestEnd, final), j[1]))
+                latestEnd = final
+            updatedLinesList.append(line)
+
+
 
     # Create Board
     [minX, maxX, minY, maxY] = pointsMinMax(pointsList)
@@ -464,7 +494,7 @@ def main():
 
     viaCenterList = createVias(board, img, pointsList, diameterList, MMpixelX, MMpixelY, MMpixel, x0, y0, median_angle)
     padPosList = createPads(board, padList, MMpixelX, MMpixelY)
-    createTracks(board, linesList, img, median_angle, MMpixelX, MMpixelY, MMpixel, x0, y0, padList, padPosList, viaPointList, viaCenterList)
+    createTracks(board, updatedLinesList, img, median_angle, MMpixelX, MMpixelY, MMpixel, x0, y0, padList, padPosList, viaPointList, viaCenterList)
     pcbnew.SaveBoard('output/' + fileName + '.kicad_pcb', board)
 
 if __name__ == '__main__':
